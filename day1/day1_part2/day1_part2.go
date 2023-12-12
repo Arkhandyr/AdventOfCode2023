@@ -1008,7 +1008,7 @@ func main() {
 	foureight6
 	crjgvsjxcpgtx8one
 	nvfive8hvdth6fgnfgh
-	8hl5eightwo`
+	8hl5eight`
 
 	var numbers []int
 	reader := strings.NewReader(input)
@@ -1016,11 +1016,16 @@ func main() {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		re := regexp.MustCompile("[0-9]|one|two|three|four|five|six|seven|eight|nine")
-		matches := re.FindAllString(line, -1)
-		parsedMatches := ParseSpelledNumbers(matches)
+		var totalMatches []string
+		for len(line) >= 3 {
+			re := regexp.MustCompile("[0-9]|one|two|three|four|five|six|seven|eight|nine")
+			matches := re.FindAllString(line, -1)
+			parsedMatches := ParseSpelledNumbers(matches)
 
-		result := parsedMatches[0] + parsedMatches[len(parsedMatches)-1]
+			totalMatches = append(totalMatches, parsedMatches...)
+			line = line[1:]
+		}
+		result := totalMatches[0] + totalMatches[len(totalMatches)-1]
 		num, _ := strconv.Atoi(result)
 		numbers = append(numbers, num)
 	}
@@ -1057,6 +1062,5 @@ func ParseSpelledNumbers(matches []string) []string {
 			parsedMatches = append(parsedMatches, word)
 		}
 	}
-	fmt.Println(parsedMatches)
 	return parsedMatches
 }
