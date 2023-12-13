@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	tools "github.com/Arkhandyr/AdventOfCode2023/tools"
 )
 
 func main() {
@@ -154,12 +156,14 @@ func main() {
 	numbers := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
 
 	symbolPositions := FindSymbols(matrix, symbols)
-	firstDigitPositions, numbers := FindNumbers(lines, numbers)
-
 	for _, position := range symbolPositions {
 
 		fmt.Println(position)
 	}
+
+	var _ [][]int
+	var _ []string
+	FindNumbers(lines, numbers)
 
 }
 
@@ -194,13 +198,12 @@ func FindSymbols(matrix [][]string, targetChars []string) [][]int {
 	return charPositions
 }
 
-func FindNumbers(lines []string, targetChars []string) ([][]int, []string) {
+func FindNumbers(lines []string, targetChars []string) {
 	for _, line := range lines {
-		queue := Queue{}
+		queue := tools.Queue{}
 
 		for _, char := range line {
-			queue.Enqueue(char)
-
+			queue.Push(char)
 		}
 	}
 }
