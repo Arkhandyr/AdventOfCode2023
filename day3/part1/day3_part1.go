@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
+	q "queue"
 	"strings"
-
-	tools "github.com/Arkhandyr/AdventOfCode2023/tools"
 )
 
 func main() {
@@ -200,7 +199,7 @@ func FindSymbols(matrix [][]string, targetChars []string) [][]int {
 
 func FindNumbers(lines []string, targetChars []string) {
 	for _, line := range lines {
-		queue := tools.Queue{}
+		queue := q.Queue{}
 
 		for _, char := range line {
 			queue.Push(char)
