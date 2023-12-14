@@ -151,13 +151,12 @@ func main() {
 	lines := strings.Split(input, "\n")
 
 	matrix := CreateMatrix(lines)
-	gears := []string{"*"}
 	numbers := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
 
-	gearPositions := FindGears(matrix, gears)
+	symbolPositions := FindSymbols(matrix)
 	numberPositions, fullNumbers := FindNumbers(matrix, numbers)
 
-	total := SumValidNumbers(numberPositions, gearPositions, fullNumbers)
+	total := SumValidNumbers(numberPositions, symbolPositions, fullNumbers)
 
 	fmt.Println(total)
 }
@@ -177,15 +176,13 @@ func CreateMatrix(lines []string) [][]string {
 	return matrix
 }
 
-func FindGears(matrix [][]string, targetChars []string) [][]int {
+func FindSymbols(matrix [][]string) [][]int {
 	var charPositions [][]int
 
 	for i, row := range matrix {
 		for j, char := range row {
-			for _, targetChar := range targetChars {
-				if char == targetChar {
-					charPositions = append(charPositions, []int{i, j})
-				}
+			if char == "*" {
+				charPositions = append(charPositions, []int{i, j})
 			}
 		}
 	}
@@ -217,9 +214,6 @@ func FindNumbers(matrix [][]string, targetChars []string) ([][]int, []string) {
 				if j+len(number) <= len(row) {
 					j = j + len(number) - 1
 				}
-
-				// Print the number and its positions
-				fmt.Printf("Number: %s, Position: %v\n", number, firstDigitPositions[len(firstDigitPositions)-1])
 			}
 		}
 	}
@@ -239,56 +233,69 @@ func IsNumber(char string, targetChars []string) bool {
 
 func SumValidNumbers(numberPositions [][]int, gearPositions [][]int, fullNumbers []string) int {
 	var validNumbers = []int{}
+	var gears = [][]int{}
 
 	for i := range numberPositions {
 		for j := 0; j < len(fullNumbers[i]); j++ {
 			numberPosition := []int{numberPositions[i][0], numberPositions[i][1] + j}
-			if HasNumberInOffset(numberPosition, gearPositions) {
+
+			gear := FindGearInOffset(numberPosition, gearPositions)
+			if gear != nil {
 				number, _ := strconv.Atoi(fullNumbers[i])
 				validNumbers = append(validNumbers, number)
+				gears = append(gears, gear)
 				break
 			}
 		}
 	}
 
 	sum := 0
-	for _, num := range validNumbers {
-		sum += num
-	}
+	gearsAux := gears
+	for _, gear := range gears {
+		var ocurrences []int
+		for j := 0; j < len(gearsAux); j++ {
+			if gear[0] == gearsAux[j][0] && gear[1] == gearsAux[j][1] {
+				ocurrences = append(ocurrences, validNumbers[j])
+				//gearAux[i], gearAux[len(gearAux)-1] = gearAux[len(gearAux)-1], gearAux[i]
+				//gearAux = gearAux[:len(gearAux)-1]
 
-	return sum
-}
+			}
+		}
+		fmt.Println(ocurrences)
+		if len(ocurrences) == 2 {
+			gearRatio := ocurrences[0] * ocurrences[1]
 
-func HasNumberInOffset(gearPosition []int, numberPositions [][]int) bool {
-	offsets := [][]int{
-		{gearPosition[0] + 1, gearPosition[1]},
-		{gearPosition[0] + 1, gearPosition[1] + 1},
-		{gearPosition[0], gearPosition[1] + 1},
-		{gearPosition[0] - 1, gearPosition[1] + 1},
-		{gearPosition[0] - 1, gearPosition[1]},
-		{gearPosition[0] - 1, gearPosition[1] - 1},
-		{gearPosition[0], gearPosition[1] - 1},
-		{gearPosition[0] + 1, gearPosition[1] - 1},
-	}
-	//problema: esse cenário é válido
-	//
-	// 123
-	//  *
-	// 123
-	//
-	//porém da forma que eu tinha feito ele consideraria que tem 6 números e descartaria
-	for _, offset := range offsets {
-		if ContainsValue(numberPositions, offset) {
-			return true
+			sum += gearRatio
 		}
 	}
 
-	return false
+	return sum / 2
 }
 
-func ContainsValue(numberPositions [][]int, offset []int) bool {
-	for _, number := range numberPositions {
-		if number[0] == offset[0] && number[1] == offset[1] {
+func FindGearInOffset(numberPosition []int, gearPositions [][]int) []int {
+	offsets := [][]int{
+		{numberPosition[0] + 1, numberPosition[1]},
+		{numberPosition[0] + 1, numberPosition[1] + 1},
+		{numberPosition[0], numberPosition[1] + 1},
+		{numberPosition[0] - 1, numberPosition[1] + 1},
+		{numberPosition[0] - 1, numberPosition[1]},
+		{numberPosition[0] - 1, numberPosition[1] - 1},
+		{numberPosition[0], numberPosition[1] - 1},
+		{numberPosition[0] + 1, numberPosition[1] - 1},
+	}
+
+	for _, offset := range offsets {
+		if ContainsValue(gearPositions, offset) {
+			return offset
+		}
+	}
+
+	return nil
+}
+
+func ContainsValue(symbolPositions [][]int, offset []int) bool {
+	for _, symbol := range symbolPositions {
+		if symbol[0] == offset[0] && symbol[1] == offset[1] {
 			return true
 		}
 	}
