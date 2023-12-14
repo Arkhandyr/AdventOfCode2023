@@ -6,3 +6,4 @@ use ./day1/part2
 use ./day2/part1
 use ./day2/part2
 use ./day3/part1
+use ./day3/part2
