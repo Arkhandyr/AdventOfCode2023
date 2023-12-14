@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	q "queue"
 	"strings"
 )
 
@@ -155,15 +154,11 @@ func main() {
 	numbers := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
 
 	symbolPositions := FindSymbols(matrix, symbols)
-	for _, position := range symbolPositions {
+	numberPositions, fullNumbers := FindNumbers(matrix, numbers)
 
-		fmt.Println(position)
-	}
+	sexo := FindValidNumbers(numberPositions, symbolPositions, fullNumbers)
 
-	var _ [][]int
-	var _ []string
-	FindNumbers(lines, numbers)
-
+	fmt.Println(sexo)
 }
 
 func CreateMatrix(lines []string) [][]string {
@@ -197,12 +192,67 @@ func FindSymbols(matrix [][]string, targetChars []string) [][]int {
 	return charPositions
 }
 
-func FindNumbers(lines []string, targetChars []string) {
-	for _, line := range lines {
-		queue := q.Queue{}
+func FindNumbers(matrix [][]string, targetChars []string) ([][]int, []string) {
+	var firstDigitPositions [][]int
+	var numbers []string
 
-		for _, char := range line {
-			queue.Push(char)
+	for i, row := range matrix {
+		for j := 0; j < len(row); j++ {
+			if IsNumber(row[j], targetChars) {
+				// Append the position of the first digit in the sequence
+				firstDigitPositions = append(firstDigitPositions, []int{i, j})
+				number := string(row[j])
+				// Validate the next characters until a non-target character is found
+				for k := j + 1; k < len(row); k++ {
+					// Check if k is within bounds before accessing queue.Characters[k]
+					if k < len(row) && IsNumber(row[k], targetChars) {
+						number += string(row[k])
+					} else {
+						break // Exit the loop when a non-target character is found
+					}
+				}
+
+				numbers = append(numbers, number)
+				fmt.Println(j + len(number))
+				if j+len(number) <= len(row) {
+					j = j + len(number) - 1
+				}
+
+				// Print the number and its positions
+				fmt.Printf("Number: %s, Position: %v\n", number, firstDigitPositions[len(firstDigitPositions)-1])
+			}
 		}
 	}
+
+	return firstDigitPositions, numbers
+}
+
+func IsNumber(char string, targetChars []string) bool {
+	for _, targetChar := range targetChars {
+		if char == targetChar {
+			return true
+		}
+	}
+
+	return false
+}
+
+func FindValidNumbers(numberPositions [][]int, symbolPositions [][]int, fullNumbers []string) []string {
+	var validNumbers = []string{}
+
+	for i := range numberPositions {
+		for j := 0; j < len(fullNumbers[i]); j++ {
+			if HasSymbolInOffset(numberPositions[i]) {
+				validNumbers = append(validNumbers, fullNumbers[i])
+			}
+		}
+	}
+
+	return validNumbers
+}
+
+func HasSymbolInOffset(numberPosition []int) bool {
+	//validar offsets do numberPosition
+
+	return true
 }

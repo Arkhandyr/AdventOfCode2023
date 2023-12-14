@@ -8,8 +8,8 @@ func (q *Queue) Len() int {
 	return len(q.Characters)
 }
 
-func (q *Queue) Push(x any) {
-	q.Characters = append(q.Characters, x.(rune))
+func (q *Queue) Push(char rune) {
+	q.Characters = append(q.Characters, char)
 }
 
 func (q *Queue) Pop() any {
