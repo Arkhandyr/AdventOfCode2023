@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -156,9 +157,9 @@ func main() {
 	symbolPositions := FindSymbols(matrix, symbols)
 	numberPositions, fullNumbers := FindNumbers(matrix, numbers)
 
-	sexo := FindValidNumbers(numberPositions, symbolPositions, fullNumbers)
+	total := SumValidNumbers(numberPositions, symbolPositions, fullNumbers)
 
-	fmt.Println(sexo)
+	fmt.Println(total)
 }
 
 func CreateMatrix(lines []string) [][]string {
@@ -213,7 +214,6 @@ func FindNumbers(matrix [][]string, targetChars []string) ([][]int, []string) {
 				}
 
 				numbers = append(numbers, number)
-				fmt.Println(j + len(number))
 				if j+len(number) <= len(row) {
 					j = j + len(number) - 1
 				}
@@ -237,22 +237,54 @@ func IsNumber(char string, targetChars []string) bool {
 	return false
 }
 
-func FindValidNumbers(numberPositions [][]int, symbolPositions [][]int, fullNumbers []string) []string {
-	var validNumbers = []string{}
+func SumValidNumbers(numberPositions [][]int, symbolPositions [][]int, fullNumbers []string) int {
+	var validNumbers = []int{}
 
 	for i := range numberPositions {
 		for j := 0; j < len(fullNumbers[i]); j++ {
-			if HasSymbolInOffset(numberPositions[i]) {
-				validNumbers = append(validNumbers, fullNumbers[i])
+			numberPosition := []int{numberPositions[i][0], numberPositions[i][1] + j}
+			if HasSymbolInOffset(numberPosition, symbolPositions) {
+				number, _ := strconv.Atoi(fullNumbers[i])
+				validNumbers = append(validNumbers, number)
+				break
 			}
 		}
 	}
 
-	return validNumbers
+	sum := 0
+	for _, num := range validNumbers {
+		sum += num
+	}
+
+	return sum
 }
 
-func HasSymbolInOffset(numberPosition []int) bool {
-	//validar offsets do numberPosition
+func HasSymbolInOffset(numberPosition []int, symbolPositions [][]int) bool {
+	offsets := [][]int{
+		{numberPosition[0] + 1, numberPosition[1]},
+		{numberPosition[0] + 1, numberPosition[1] + 1},
+		{numberPosition[0], numberPosition[1] + 1},
+		{numberPosition[0] - 1, numberPosition[1] + 1},
+		{numberPosition[0] - 1, numberPosition[1]},
+		{numberPosition[0] - 1, numberPosition[1] - 1},
+		{numberPosition[0], numberPosition[1] - 1},
+		{numberPosition[0] + 1, numberPosition[1] - 1},
+	}
 
-	return true
+	for _, offset := range offsets {
+		if ContainsValue(symbolPositions, offset) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ContainsValue(symbolPositions [][]int, offset []int) bool {
+	for _, symbol := range symbolPositions {
+		if symbol[0] == offset[0] && symbol[1] == offset[1] {
+			return true
+		}
+	}
+	return false
 }
