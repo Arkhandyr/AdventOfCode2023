@@ -200,16 +200,13 @@ func FindNumbers(matrix [][]string, targetChars []string) ([][]int, []string) {
 	for i, row := range matrix {
 		for j := 0; j < len(row); j++ {
 			if IsNumber(row[j], targetChars) {
-				// Append the position of the first digit in the sequence
 				firstDigitPositions = append(firstDigitPositions, []int{i, j})
 				number := string(row[j])
-				// Validate the next characters until a non-target character is found
 				for k := j + 1; k < len(row); k++ {
-					// Check if k is within bounds before accessing queue.Characters[k]
 					if k < len(row) && IsNumber(row[k], targetChars) {
 						number += string(row[k])
 					} else {
-						break // Exit the loop when a non-target character is found
+						break
 					}
 				}
 
@@ -218,7 +215,6 @@ func FindNumbers(matrix [][]string, targetChars []string) ([][]int, []string) {
 					j = j + len(number) - 1
 				}
 
-				// Print the number and its positions
 				fmt.Printf("Number: %s, Position: %v\n", number, firstDigitPositions[len(firstDigitPositions)-1])
 			}
 		}
