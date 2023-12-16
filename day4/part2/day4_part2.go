@@ -214,31 +214,19 @@ func main() {
 	Card 206: 74 30 29 66 68  2  3 34 79 87 | 63 45 88 78 98 27 97 32 38 75  9 11 71 93 55 69 56 20 12 82 81 41 80 23 94`
 
 	lines := strings.Split(input, "\n")
-	var cards, scores = GetScores(lines)
-	totalCards := 0
-	for i := range cards {
-		for j := 1; j <= scores[i]; j++ {
-			cards[i+j] += 1 * cards[i]
-		}
-	}
-
-	for _, card := range cards {
-		totalCards += card
-	}
+	cards, scores := GetScores(lines)
+	totalCards := GetCardQuantity(cards, scores)
 
 	fmt.Println(totalCards)
 }
 
 func GetScores(lines []string) ([]int, []int) {
-	var cards = []int{}
-	var scores = []int{}
+	var cards, scores = []int{}, []int{}
 
-	for i := 0; i < len(lines); i++ {
+	for _, line := range lines {
 		cards = append(cards, 1)
-		game := strings.Split(lines[i], ":")[1]
-		parts := strings.Split(game, "|")
-		winningNumbers := strings.Fields(parts[0])
-		gameNumbers := strings.Fields(parts[1])
+		game := strings.Split(line, ":")[1]
+		winningNumbers, gameNumbers := strings.Fields(strings.Split(game, "|")[0]), strings.Fields(strings.Split(game, "|")[1])
 
 		score := 0
 		for _, gameNumber := range gameNumbers {
@@ -253,4 +241,18 @@ func GetScores(lines []string) ([]int, []int) {
 	}
 
 	return cards, scores
+}
+
+func GetCardQuantity(cards []int, scores []int) int {
+	totalCards := 0
+
+	for i, card := range cards {
+		for j := 1; j <= scores[i]; j++ {
+			cards[i+j] += 1 * cards[i]
+		}
+
+		totalCards += card
+	}
+
+	return totalCards
 }
