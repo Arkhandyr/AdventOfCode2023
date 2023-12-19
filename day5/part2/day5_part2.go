@@ -216,48 +216,38 @@ humidity-to-location map:
 1120661448 435636935 134200027
 130183265 2386051074 290870825`
 
-var seedToSoil, soilToFertilizer, fertilizerToWater, waterToLight, lightToTemperature, temperatureToHumidity, humidityToLocation = [][]int{}, [][]int{}, [][]int{}, [][]int{}, [][]int{}, [][]int{}, [][]int{}
+var mapValues = [][][]int{{}, {}, {}, {}, {}, {}, {}}
 var lowestLocation = []int{}
 
 func main() {
 	startTime := time.Now()
 
-	GenerateMaps(input)
+	maps := strings.Split(input, "\n\n")[1:]
+	ExtractValues(maps)
 
+	fmt.Println(mapValues[0])
 	CalculateSeedLocation()
 
 	slices.Sort(lowestLocation)
 
-	endTime := time.Now()
-	duration := endTime.Sub(startTime)
-	seconds := duration.Seconds()
+	duration := time.Since(startTime).Seconds()
 
-	fmt.Printf("Lowest location: %d\nTime spent: %2.fs\n", lowestLocation[0], seconds)
+	fmt.Printf("Lowest location: %d\nTime spent: %2.fs\n", lowestLocation[0], duration)
 }
 
-func GenerateMaps(input string) {
-	maps := strings.Split(input, "\n\n")
-	seedToSoilMap, soilToFertilizerMap, fertilizerToWaterMap, waterToLightMap, lightToTemperatureMap, temperatureToHumidityMap, humidityToLocationMap := strings.Split(maps[1], ":")[1], strings.Split(maps[2], ":")[1], strings.Split(maps[3], ":")[1], strings.Split(maps[4], ":")[1], strings.Split(maps[5], ":")[1], strings.Split(maps[6], ":")[1], strings.Split(maps[7], ":")[1]
+func ExtractValues(maps []string) {
+	for i, currentMap := range maps {
+		for j := 1; j < len(strings.Split(currentMap, "\n")); j++ {
+			var lineValues = []int{}
+			values := strings.Split(strings.Split(currentMap, "\n")[j], " ")
 
-	ExtractValues(seedToSoilMap, &seedToSoil)
-	ExtractValues(soilToFertilizerMap, &soilToFertilizer)
-	ExtractValues(fertilizerToWaterMap, &fertilizerToWater)
-	ExtractValues(waterToLightMap, &waterToLight)
-	ExtractValues(lightToTemperatureMap, &lightToTemperature)
-	ExtractValues(temperatureToHumidityMap, &temperatureToHumidity)
-	ExtractValues(humidityToLocationMap, &humidityToLocation)
-}
+			for _, value := range values {
+				value, _ := strconv.Atoi(value)
+				lineValues = append(lineValues, value)
+			}
 
-func ExtractValues(valueMap string, slice *[][]int) {
-	for i := 1; i < len(strings.Split(valueMap, "\n")); i++ {
-		var lineValues = []int{}
-		values := strings.Split(strings.Split(valueMap, "\n")[i], " ")
-		for _, value := range values {
-			value, _ := strconv.Atoi(value)
-			lineValues = append(lineValues, value)
+			mapValues[i] = append(mapValues[i], lineValues)
 		}
-
-		*slice = append(*slice, lineValues)
 	}
 }
 
@@ -270,6 +260,7 @@ func CalculateSeedLocation() {
 	for i := 1; i < len(strings.Split(seedMap, " ")); i = i + 2 {
 		initialSeed, _ := strconv.Atoi(strings.Split(seedMap, " ")[i])
 		seedRange, _ := strconv.Atoi(strings.Split(seedMap, " ")[i+1])
+
 		wg.Add(1)
 		go func(seed, rangeVal int) {
 			threadMin := math.MaxInt32
@@ -282,13 +273,9 @@ func CalculateSeedLocation() {
 			for j := 0; j < rangeVal; j++ {
 				location := seed + j
 
-				location = CheckMap(location, seedToSoil)
-				location = CheckMap(location, soilToFertilizer)
-				location = CheckMap(location, fertilizerToWater)
-				location = CheckMap(location, waterToLight)
-				location = CheckMap(location, lightToTemperature)
-				location = CheckMap(location, temperatureToHumidity)
-				location = CheckMap(location, humidityToLocation)
+				for _, currentMap := range mapValues {
+					location = CheckMaps(location, currentMap)
+				}
 
 				if location < threadMin {
 					threadMin = location
@@ -304,14 +291,13 @@ func CalculateSeedLocation() {
 	wg.Wait()
 }
 
-func CheckMap(seed int, step [][]int) int {
+func CheckMaps(seed int, valueMap [][]int) int {
 	result := seed
-	for _, item := range step {
+	for _, item := range valueMap {
 		if seed >= item[1] && seed <= item[1]+item[2]-1 {
 			result = item[0] + (seed - item[1])
 			break
 		}
 	}
-
 	return result
 }
