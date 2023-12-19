@@ -1009,10 +1009,9 @@ K55K6 42
 Q44Q4 22`
 
 var cardToValue = map[rune]int{
-	'A': 14,
-	'K': 13,
-	'Q': 12,
-	'J': 11,
+	'A': 13,
+	'K': 12,
+	'Q': 11,
 	'T': 10,
 	'9': 9,
 	'8': 8,
@@ -1022,6 +1021,7 @@ var cardToValue = map[rune]int{
 	'4': 4,
 	'3': 3,
 	'2': 2,
+	'J': 1,
 }
 
 var handsByType [7][]string
@@ -1052,12 +1052,17 @@ func main() {
 
 func GetHandType(line string) {
 	hand := strings.Fields(line)[0]
-
-	labels := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	fmt.Println(hand)
+	cardCount := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 	for _, card := range hand {
-		labels[cardToValue[card]-2]++
+		cardCount[cardToValue[card]-1]++
 	}
+	fmt.Println(cardCount)
+
+	cardTypeWithJoker := ApplyJokers(cardCount[1:], cardCount[0])
+
+	fmt.Println(cardTypeWithJoker)
 
 	const (
 		FullHouse = iota
@@ -1070,17 +1075,17 @@ func GetHandType(line string) {
 	)
 
 	switch {
-	case contains(labels, 5) == 1:
+	case contains(cardTypeWithJoker, 5) == 1:
 		handsByType[FullHouse] = append(handsByType[FullHouse], line)
-	case contains(labels, 4) == 1:
+	case contains(cardTypeWithJoker, 4) == 1:
 		handsByType[FourOfAKind] = append(handsByType[FourOfAKind], line)
-	case contains(labels, 3) == 1 && contains(labels, 2) == 1:
+	case contains(cardTypeWithJoker, 3) == 1 && contains(cardTypeWithJoker, 2) == 1:
 		handsByType[ThreeOfAKindWithPair] = append(handsByType[ThreeOfAKindWithPair], line)
-	case contains(labels, 3) == 1:
+	case contains(cardTypeWithJoker, 3) == 1:
 		handsByType[ThreeOfAKind] = append(handsByType[ThreeOfAKind], line)
-	case contains(labels, 2) == 2:
+	case contains(cardTypeWithJoker, 2) == 2:
 		handsByType[TwoPairs] = append(handsByType[TwoPairs], line)
-	case contains(labels, 2) == 1:
+	case contains(cardTypeWithJoker, 2) == 1:
 		handsByType[OnePair] = append(handsByType[OnePair], line)
 	default:
 		handsByType[HighCard] = append(handsByType[HighCard], line)
@@ -1095,6 +1100,21 @@ func contains(slice []int, val int) int {
 		}
 	}
 	return quantity
+}
+
+func ApplyJokers(cardCount []int, jokers int) []int {
+	max := cardCount[0]
+	index := 0
+	for i, num := range cardCount {
+		if num > max {
+			max = num
+			index = i
+		}
+	}
+
+	cardCount[index] += jokers
+
+	return cardCount
 }
 
 func customSort(slice []string) {
